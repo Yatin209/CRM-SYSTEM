@@ -10,6 +10,13 @@ import { errorHandler, notFound } from "./middlewares/errorHandler.js";
 import apiRoutes from "./routes/index.js";
 import { successResponse } from "./utils/apiResponse.js";
 
+// Supports a single origin or a comma-separated list via CLIENT_ORIGIN,
+// e.g. CLIENT_ORIGIN="https://app.example.com,https://admin.example.com"
+const allowedOrigins = env.clientOrigin
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 const app = express();
 
 app.use(helmet());

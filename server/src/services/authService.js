@@ -231,12 +231,12 @@ export async function resetPassword(token, password) {
 }
 
 export function cookieOptions() {
+  const isProd = process.env.NODE_ENV === "production";
   return {
     httpOnly: true,
-    secure: env.nodeEnv === "production",
-    sameSite: env.nodeEnv === "production" ? "none" : "lax",
-    domain: env.cookieDomain,
-    path: "/api/auth/refresh",
-    maxAge: 30 * 24 * 60 * 60 * 1000,
+    secure: isProd,                       // true only in production (HTTPS)
+    sameSite: isProd ? "none" : "lax",    // "lax" works fine for localhost
+    path: "/",
+    maxAge: 7 * 24 * 60 * 60 * 1000,      // adjust to your refresh token TTL
   };
 }

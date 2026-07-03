@@ -12,7 +12,7 @@ import {
   followUpService,
   notificationService,
   reportService,
-  userService
+  userService,
 } from "../services/resourceServices.js";
 
 const router = Router();
@@ -20,7 +20,12 @@ const router = Router();
 const admin = ["Administrator"];
 const managers = ["Administrator", "Manager"];
 const sales = ["Administrator", "Manager", "Sales Executive"];
-const crm = ["Administrator", "Manager", "Sales Executive", "Customer Support Executive"];
+const crm = [
+  "Administrator",
+  "Manager",
+  "Sales Executive",
+  "Customer Support Executive",
+];
 
 router.use("/auth", authRoutes);
 router.use("/dashboard", dashboardRoutes);
@@ -35,8 +40,8 @@ router.use(
     name: "Communication",
     readRoles: crm,
     writeRoles: crm,
-    deleteRoles: managers
-  })
+    deleteRoles: managers,
+  }),
 );
 router.use(
   "/follow-ups",
@@ -45,8 +50,8 @@ router.use(
     name: "Follow-up",
     readRoles: crm,
     writeRoles: crm,
-    deleteRoles: managers
-  })
+    deleteRoles: managers,
+  }),
 );
 router.use(
   "/reports",
@@ -55,8 +60,8 @@ router.use(
     name: "Report",
     readRoles: ["Administrator", "Manager", "Customer Support Executive"],
     writeRoles: managers,
-    deleteRoles: admin
-  })
+    deleteRoles: admin,
+  }),
 );
 router.use(
   "/notifications",
@@ -65,8 +70,8 @@ router.use(
     name: "Notification",
     readRoles: crm,
     writeRoles: managers,
-    deleteRoles: managers
-  })
+    deleteRoles: managers,
+  }),
 );
 router.use(
   "/activities",
@@ -75,8 +80,8 @@ router.use(
     name: "Activity",
     readRoles: crm,
     writeRoles: sales,
-    deleteRoles: admin
-  })
+    deleteRoles: admin,
+  }),
 );
 router.use(
   "/users",
@@ -85,11 +90,8 @@ router.use(
     name: "User",
     readRoles: managers,
     writeRoles: admin,
-    deleteRoles: admin
-  })
+    deleteRoles: admin,
+  }),
 );
-
-import communicationRoutes from "./communicationRoutes.js";
-router.use("/communications", communicationRoutes);
 
 export default router;
