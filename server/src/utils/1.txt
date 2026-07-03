@@ -1,0 +1,24 @@
+lead flow (after assign and )
+from lead slide bar lead not assign and lead at dashboard do not ask all details .state chaneg.
+remove all reset button in every page
+soft delete should be restored? and who can restore it? if any one detelte something it should be shown in activity
+lead visible to every employee?
+
+the lead assign to any one should we visible to its notification of assgnee
+
+
+
+remove + new lead and creaete task button from top right side of dashboard upside from that 4 options add lead,add custoemr,create task,new campain
+
+remove score and expected close field from add lead.remoce health and doc from add customer field
+
+the follow up and upcomming task are showing same things and all the changes in lead,customer campain all data should be updated in activity for all employees
+
+check that what is diffrence between priority task and upcomming followup sections
+
+add a delete button in lead section and customer section .lead can can be deleted and edited by everyone while customer can be deleted by only admin
+the status,stage,owner should change state ca be done by all employees
+
+customer staus can be changes by only admin and remove health and docs section form customer
+
+the campain details (total capmpain,active,completd etc should be dispalyed broadely)
