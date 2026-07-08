@@ -58,4 +58,8 @@ Desktop.ini
 2.txt
 *.bak
 *.swp
+<<<<<<< HEAD
 *.swo
+=======
+*.swo
+>>>>>>> a207d9734fbed42a32f75bee2211fcdb8e59f9b9
