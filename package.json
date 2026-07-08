@@ -1,0 +1,23 @@
+{
+  "name": "nexacrm",
+  "version": "1.0.0",
+  "private": true,
+  "description": "NexaCRM enterprise CRM system inspired by modern Zoho-style sales workflows.",
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "dev:client": "npm run dev --prefix client",
+    "dev:server": "npm run dev --prefix server",
+    "build": "npm run build --prefix client",
+    "install:all": "npm install && npm install --prefix client && npm install --prefix server",
+    "lint": "npm run lint --prefix client"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "nodemailer": "^9.0.3",
+    "nodemon": "^3.1.14"
+  }
+}
