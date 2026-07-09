@@ -11,6 +11,8 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime.js";
 import { useEffect, useRef, useState } from "react";
 import {
   Link,
@@ -28,6 +30,8 @@ import { useAuth } from "../context/AuthContext.jsx";
 import { useCrmData } from "../context/CrmDataContext.jsx";
 import { downloadCsv } from "../utils/csvExport.js";
 
+dayjs.extend(relativeTime);
+
 /* ── helpers ─────────────────────────────────────── */
 function dl(blob, name) {
   const a = document.createElement("a");
@@ -38,44 +42,130 @@ function dl(blob, name) {
 }
 
 /* ── Notification panel ──────────────────────────── */
-function NotifPanel({ tasks, onClose }) {
-  const pending = tasks.filter((t) => t.status !== "Completed").slice(0, 6);
+function NotifPanel({ notifications, tasks, markNotificationRead, markAllNotificationsRead, onClose }) {
+  const unreadNotifications = notifications.filter((n) => !n.read);
+  const pendingTasks = tasks.filter((t) => t.status !== "Completed");
+  
+  // Combine notifications and tasks, sort by date
+  const allItems = [
+    ...notifications.map((n) => ({
+      ...n,
+      itemType: "notification",
+      sortDate: new Date(n.createdAt || Date.now()),
+    })),
+    ...pendingTasks.map((t) => ({
+      ...t,
+      itemType: "task",
+      sortDate: new Date(t.dueDate || Date.now()),
+    })),
+  ].sort((a, b) => b.sortDate - a.sortDate);
+
+  const displayItems = allItems.slice(0, 10);
+  const totalUnread = unreadNotifications.length + pendingTasks.length;
+
+  const getNotificationTone = (type) => {
+    switch (type) {
+      case "Assignment":
+        return "primary";
+      case "Follow-up":
+        return "warning";
+      case "Deal":
+        return "success";
+      case "Ticket":
+        return "danger";
+      default:
+        return "info";
+    }
+  };
+
+  const getTaskTone = (priority) => {
+    switch (priority) {
+      case "High":
+        return "danger";
+      case "Low":
+        return "success";
+      default:
+        return "warning";
+    }
+  };
+
+  const handleMarkAsRead = (id, e) => {
+    e.stopPropagation();
+    markNotificationRead(id);
+  };
+
   return (
     <div className="notif-panel" role="dialog" aria-label="Notifications">
       <div className="notif-header">
         <strong>Notifications</strong>
-        <button className="icon-button" onClick={onClose} aria-label="Close">
-          <X size={15} />
-        </button>
+        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+          {unreadNotifications.length > 0 && (
+            <button
+              className="text-button"
+              onClick={markAllNotificationsRead}
+              style={{ fontSize: "12px", padding: "4px 8px" }}
+            >
+              Mark all read
+            </button>
+          )}
+          <button className="icon-button" onClick={onClose} aria-label="Close">
+            <X size={15} />
+          </button>
+        </div>
       </div>
-      {pending.length === 0 ? (
+      {displayItems.length === 0 ? (
         <p className="notif-empty">All caught up 🎉</p>
       ) : (
         <ul className="notif-list">
-          {pending.map((t) => (
-            <li key={t.id} className="notif-item">
-              <span
-                className={`notif-dot p-${(t.priority || "Medium").toLowerCase()}`}
-              />
-              <div>
-                <strong>{t.title}</strong>
-                <span>
-                  {t.relatedTo} · {t.dueDate}
-                </span>
-              </div>
-              <Badge
-                tone={
-                  t.priority === "High"
-                    ? "danger"
-                    : t.priority === "Low"
-                      ? "success"
-                      : "warning"
-                }
-              >
-                {t.priority}
-              </Badge>
-            </li>
-          ))}
+          {displayItems.map((item) => {
+            if (item.itemType === "notification") {
+              return (
+                <li
+                  key={`notif-${item.id || item._id}`}
+                  className="notif-item"
+                  style={{
+                    opacity: item.read ? 0.6 : 1,
+                    backgroundColor: item.read ? "transparent" : "var(--color-bg-subtle)",
+                  }}
+                >
+                  <span className={`notif-dot`} style={{ 
+                    backgroundColor: item.read ? "var(--color-border)" : "var(--color-primary)" 
+                  }} />
+                  <div style={{ flex: 1 }}>
+                    <strong>{item.title}</strong>
+                    <span>
+                      {item.message}
+                      {item.createdAt && ` · ${dayjs(item.createdAt).fromNow()}`}
+                    </span>
+                  </div>
+                  <Badge tone={getNotificationTone(item.type)}>
+                    {item.type}
+                  </Badge>
+                </li>
+              );
+            } else {
+              // Task item
+              return (
+                <li
+                  key={`task-${item.id || item._id}`}
+                  className="notif-item"
+                >
+                  <span
+                    className={`notif-dot p-${(item.priority || "Medium").toLowerCase()}`}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <strong>{item.title}</strong>
+                    <span>
+                      {item.relatedTo} · Due: {item.dueDate}
+                    </span>
+                  </div>
+                  <Badge tone={getTaskTone(item.priority)}>
+                    {item.priority}
+                  </Badge>
+                </li>
+              );
+            }
+          })}
         </ul>
       )}
     </div>
@@ -242,7 +332,15 @@ function GlobalSearch() {
 /* ── Main layout ─────────────────────────────────── */
 export default function AppLayout() {
   const { user, logout } = useAuth();
-  const { tasks = [], leads = [], customers = [], users = [] } = useCrmData();
+  const { 
+    tasks = [], 
+    leads = [], 
+    customers = [], 
+    users = [],
+    notifications = [],
+    markNotificationRead,
+    markAllNotificationsRead,
+  } = useCrmData();
   const location = useLocation();
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -253,6 +351,8 @@ export default function AppLayout() {
   const exportRef = useRef(null);
 
   const pendingCount = tasks.filter((t) => t.status !== "Completed").length;
+  const unreadNotifCount = notifications.filter((n) => !n.read).length;
+  const totalNotificationCount = unreadNotifCount + pendingCount;
 
   const visibleItems = navigationItems.filter(
     (i) => !i.hidden && canAccess(user.role, i.id),
@@ -423,12 +523,18 @@ export default function AppLayout() {
                 title="Notifications"
               >
                 <Bell size={20} />
-                {pendingCount > 0 && (
-                  <span className="notification-badge">{pendingCount}</span>
+                {totalNotificationCount > 0 && (
+                  <span className="notification-badge">{totalNotificationCount}</span>
                 )}
               </button>
               {notifOpen && (
-                <NotifPanel tasks={tasks} onClose={() => setNotifOpen(false)} />
+                <NotifPanel 
+                  notifications={notifications}
+                  tasks={tasks}
+                  markNotificationRead={markNotificationRead}
+                  markAllNotificationsRead={markAllNotificationsRead}
+                  onClose={() => setNotifOpen(false)} 
+                />
               )}
             </div>
 

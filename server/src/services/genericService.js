@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { isMongoReady } from "../config/db.js";
 import { createMemory, getMemory, listMemory, removeMemory, updateMemory } from "../data/memoryStore.js";
 
-const allowedFilters = ["status", "category", "priority", "industry", "type", "owner", "assignee", "read"];
+const allowedFilters = ["status", "category", "priority", "industry", "type", "owner", "assignee", "read", "user"];
 
 function normalize(record) {
   if (!record) return null;

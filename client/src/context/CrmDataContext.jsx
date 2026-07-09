@@ -50,6 +50,7 @@ export function CrmDataProvider({ children }) {
   const [users, setUsers] = useState(demoUsers);
   const [communications] = useState(initialCommunications);
   const [dashboardMetrics, setDashboardMetrics] = useState(null);
+  const [notifications, setNotifications] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
   /* ── Fetchers ─────────────────────────────────────────── */
@@ -124,6 +125,17 @@ export function CrmDataProvider({ children }) {
     }
   }, []);
 
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const res = await http.get("/notifications", { params: { limit: 50 } });
+      const data = res.data?.data || [];
+      setNotifications(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.warn("Could not fetch notifications:", err.message);
+      setNotifications([]);
+    }
+  }, []);
+
   const refreshAll = useCallback(async () => {
     setIsLoading(true);
     await Promise.all([
@@ -133,6 +145,7 @@ export function CrmDataProvider({ children }) {
       fetchUsers(),
       fetchCampaigns(),
       fetchDashboard(),
+      fetchNotifications(),
     ]);
     setIsLoading(false);
   }, [
@@ -142,6 +155,7 @@ export function CrmDataProvider({ children }) {
     fetchUsers,
     fetchCampaigns,
     fetchDashboard,
+    fetchNotifications,
   ]);
 
   // Load data once authenticated
@@ -185,6 +199,7 @@ export function CrmDataProvider({ children }) {
         setLeads((cur) => [newLead, ...cur]);
         toast.success("✓ Lead created");
         fetchDashboard();
+        fetchNotifications(); // Refresh notifications after lead assignment
         return newLead;
       } catch (error) {
         const msg =
@@ -195,7 +210,7 @@ export function CrmDataProvider({ children }) {
         throw error;
       }
     },
-    [fetchDashboard, users],
+    [fetchDashboard, fetchNotifications, users],
   );
 
   const updateLead = useCallback(
@@ -245,13 +260,16 @@ export function CrmDataProvider({ children }) {
           toast.success("✓ Lead updated");
         }
         fetchDashboard();
+        if (patch.ownerId) {
+          fetchNotifications(); // Refresh notifications after lead reassignment
+        }
         return updated;
       } catch (error) {
         toast.error(error.response?.data?.message || "Failed to update lead");
         throw error;
       }
     },
-    [fetchDashboard, users, customers],
+    [fetchDashboard, fetchNotifications, users, customers],
   );
 
   const updateLeadStage = useCallback(
@@ -573,6 +591,36 @@ export function CrmDataProvider({ children }) {
     }
   }, []);
 
+  const markNotificationRead = useCallback(async (id) => {
+    try {
+      await http.put(`/notifications/${id}`, { read: true });
+      setNotifications((cur) =>
+        cur.map((n) => (n.id === id || n._id === id ? { ...n, read: true } : n))
+      );
+    } catch (error) {
+      console.warn("Failed to mark notification as read:", error.message);
+    }
+  }, []);
+
+  const markAllNotificationsRead = useCallback(async () => {
+    try {
+      const unreadIds = notifications
+        .filter((n) => !n.read)
+        .map((n) => n.id || n._id);
+      
+      await Promise.all(
+        unreadIds.map((id) => http.put(`/notifications/${id}`, { read: true }))
+      );
+      
+      setNotifications((cur) =>
+        cur.map((n) => ({ ...n, read: true }))
+      );
+      toast.success("✓ All notifications marked as read");
+    } catch (error) {
+      toast.error("Failed to mark notifications as read");
+    }
+  }, [notifications]);
+
   /* ── Derived data (client-side, always live) ─────────────── */
   const metrics = useMemo(() => {
     const totalLeadValue = leads.reduce((sum, l) => sum + currency(l.value), 0);
@@ -609,16 +657,19 @@ export function CrmDataProvider({ children }) {
       return dashboardMetrics.pipeline.map((p) => ({
         stage: p.stage,
         value: p.value,
+        count: p.count,
         leads: leads.filter((l) => l.status === p.stage),
       }));
     }
-    return pipelineStages.map((stage) => ({
-      stage,
-      leads: leads.filter((l) => l.status === stage),
-      value: leads
-        .filter((l) => l.status === stage)
-        .reduce((sum, l) => sum + currency(l.value), 0),
-    }));
+    return pipelineStages.map((stage) => {
+      const stageLeads = leads.filter((l) => l.status === stage);
+      return {
+        stage,
+        leads: stageLeads,
+        count: stageLeads.length,
+        value: stageLeads.reduce((sum, l) => sum + currency(l.value), 0),
+      };
+    });
   }, [leads, dashboardMetrics]);
 
   // Revenue trend built from live customer + lead data (last 6 months)
@@ -759,6 +810,10 @@ export function CrmDataProvider({ children }) {
       users,
       isLoading,
       refreshAll,
+      notifications,
+      fetchNotifications,
+      markNotificationRead,
+      markAllNotificationsRead,
     }),
     [
       activities,
@@ -788,6 +843,10 @@ export function CrmDataProvider({ children }) {
       users,
       isLoading,
       refreshAll,
+      notifications,
+      fetchNotifications,
+      markNotificationRead,
+      markAllNotificationsRead,
     ],
   );
 

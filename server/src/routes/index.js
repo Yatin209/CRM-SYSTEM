@@ -5,12 +5,12 @@ import dashboardRoutes from "./dashboardRoutes.js";
 import leadRoutes from "./leadRoutes.js";
 import taskRoutes from "./taskRoutes.js";
 import campaignRoutes from "./campaignRoutes.js";
+import notificationRoutes from "./notificationRoutes.js";
 import { createResourceRouter } from "./createResourceRouter.js";
 import {
   activityService,
   communicationService,
   followUpService,
-  notificationService,
   reportService,
   userService
 } from "../services/resourceServices.js";
@@ -28,6 +28,7 @@ router.use("/leads", leadRoutes);
 router.use("/customers", customerRoutes);
 router.use("/tasks", taskRoutes);
 router.use("/campaigns", campaignRoutes);
+router.use("/notifications", notificationRoutes);
 router.use(
   "/communications",
   createResourceRouter({
@@ -56,16 +57,6 @@ router.use(
     readRoles: ["Administrator", "Manager", "Customer Support Executive"],
     writeRoles: managers,
     deleteRoles: admin
-  })
-);
-router.use(
-  "/notifications",
-  createResourceRouter({
-    service: notificationService,
-    name: "Notification",
-    readRoles: crm,
-    writeRoles: managers,
-    deleteRoles: managers
   })
 );
 router.use(
