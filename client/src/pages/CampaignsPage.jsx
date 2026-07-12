@@ -5,7 +5,7 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
-import { Edit3, Plus, Trash2, Building2, Users } from "lucide-react";
+import { Download, Edit3, Plus, Trash2, Building2, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 import Badge from "../components/common/Badge.jsx";
 import Button from "../components/common/Button.jsx";
@@ -20,6 +20,7 @@ import CampaignFormModal, {
 } from "../components/forms/CampaignFormModal.jsx";
 import { useCrmData } from "../context/CrmDataContext.jsx";
 import { formatDate } from "../utils/formatters.js";
+import { downloadCsv } from "../utils/csvExport.js";
 
 // Distinct color per campaign status for quick visual scanning.
 const STATUS_COLORS = {
@@ -31,7 +32,7 @@ const STATUS_COLORS = {
 };
 
 function CampaignsPage() {
-  const { campaigns, removeCampaign, customers } = useCrmData();
+  const { campaigns, removeCampaign, customers, users } = useCrmData();
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [typeFilter, setTypeFilter] = useState("All");
@@ -102,6 +103,11 @@ function CampaignsPage() {
   function closeCustomerModal() {
     setCustomerModalOpen(false);
     setSelectedCustomer(null);
+  }
+
+  function handleExport() {
+    const ts = new Date().toISOString().slice(0, 10);
+    downloadCsv(`nexacrm-campaigns-${ts}.csv`, campaigns, users);
   }
 
   const columns = [
@@ -179,9 +185,14 @@ function CampaignsPage() {
         title="Campaigns"
         eyebrow="Campaign management"
         actions={
-          <Button icon={Plus} onClick={() => setOpen(true)}>
-            New Campaign
-          </Button>
+          <div style={{ display: "flex", gap: "0.5rem" }}>
+            <Button variant="ghost" icon={Download} onClick={handleExport}>
+              Export CSV
+            </Button>
+            <Button icon={Plus} onClick={() => setOpen(true)}>
+              New Campaign
+            </Button>
+          </div>
         }
       />
 

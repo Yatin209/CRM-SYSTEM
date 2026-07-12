@@ -1,4 +1,4 @@
-import { Edit3, Plus, Trash2 } from "lucide-react";
+import { Download, Edit3, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import Badge from "../components/common/Badge.jsx";
 import Button from "../components/common/Button.jsx";
@@ -12,11 +12,12 @@ import { useAuth } from "../context/AuthContext.jsx";
 import { useCrmData } from "../context/CrmDataContext.jsx";
 import { useDebouncedValue } from "../hooks/useDebouncedValue.js";
 import { formatCurrency, statusTone } from "../utils/formatters.js";
+import { downloadCsv } from "../utils/csvExport.js";
 
 const categories = ["All", "Strategic", "Enterprise", "Mid Market", "SMB"];
 
 function CustomersPage() {
-  const { customers, removeCustomer } = useCrmData();
+  const { customers, removeCustomer, users } = useCrmData();
   const { user: currentUser } = useAuth();
   const isAdmin = currentUser?.role === ROLES.ADMIN;
   const [query, setQuery] = useState("");
@@ -42,6 +43,11 @@ function CustomersPage() {
   function closeEditor() {
     setEditing(null);
     setOpen(false);
+  }
+
+  function handleExport() {
+    const ts = new Date().toISOString().slice(0, 10);
+    downloadCsv(`nexacrm-customers-${ts}.csv`, customers, users);
   }
 
   const columns = [
@@ -91,9 +97,14 @@ function CustomersPage() {
         title="Customers"
         eyebrow="Accounts and retention"
         actions={
-          <Button icon={Plus} onClick={() => setOpen(true)}>
-            Add Customer
-          </Button>
+          <div style={{ display: "flex", gap: "0.5rem" }}>
+            <Button variant="ghost" icon={Download} onClick={handleExport}>
+              Export CSV
+            </Button>
+            <Button icon={Plus} onClick={() => setOpen(true)}>
+              Add Customer
+            </Button>
+          </div>
         }
       />
 

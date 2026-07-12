@@ -1,4 +1,4 @@
-import { Edit2, Plus, Trash2 } from "lucide-react";
+import { Download, Edit2, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import Badge from "../components/common/Badge.jsx";
 import Button from "../components/common/Button.jsx";
@@ -11,9 +11,10 @@ import { useCrmData } from "../context/CrmDataContext.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useDebouncedValue } from "../hooks/useDebouncedValue.js";
 import { statusTone, formatDate } from "../utils/formatters.js";
+import { downloadCsv } from "../utils/csvExport.js";
 
 function TasksPage() {
-  const { tasks, updateTask, deleteTask } = useCrmData();
+  const { tasks, updateTask, deleteTask, users } = useCrmData();
   const { user } = useAuth();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
@@ -47,6 +48,11 @@ function TasksPage() {
   const isTaskAssignee = (task) => {
     return task.assignee === user?.name || task.assignee === user?.email;
   };
+
+  function handleExport() {
+    const ts = new Date().toISOString().slice(0, 10);
+    downloadCsv(`nexacrm-tasks-${ts}.csv`, tasks, users);
+  }
 
   // Define columns dynamically based on user role
   const columns = useMemo(() => {
@@ -137,9 +143,14 @@ function TasksPage() {
         eyebrow="Follow-ups and activity"
         actions={
           isAdmin && (
-            <Button icon={Plus} onClick={() => setOpen(true)}>
-              Add Task
-            </Button>
+            <div style={{ display: "flex", gap: "0.5rem" }}>
+              <Button variant="ghost" icon={Download} onClick={handleExport}>
+                Export CSV
+              </Button>
+              <Button icon={Plus} onClick={() => setOpen(true)}>
+                Add Task
+              </Button>
+            </div>
           )
         }
       />

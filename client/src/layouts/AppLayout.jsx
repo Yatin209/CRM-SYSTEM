@@ -1,10 +1,5 @@
 import {
-  BarChart3,
   Bell,
-  CheckSquare,
-  Download,
-  FileSpreadsheet,
-  FileText,
   LogOut,
   Menu,
   Search,
@@ -28,19 +23,9 @@ import { navigationGroups, navigationItems } from "../config/navigation.js";
 import { canAccess, ROLE_COLORS } from "../config/roles.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useCrmData } from "../context/CrmDataContext.jsx";
-import { downloadCsv } from "../utils/csvExport.js";
 import { formatDate } from "../utils/formatters.js";
 
 dayjs.extend(relativeTime);
-
-/* ── helpers ─────────────────────────────────────── */
-function dl(blob, name) {
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = name;
-  a.click();
-  URL.revokeObjectURL(a.href);
-}
 
 /* ── Notification panel ──────────────────────────── */
 function NotifPanel({ notifications, tasks, markNotificationRead, markAllNotificationsRead, onClose }) {
@@ -99,20 +84,13 @@ function NotifPanel({ notifications, tasks, markNotificationRead, markAllNotific
     <div className="notif-panel" role="dialog" aria-label="Notifications">
       <div className="notif-header">
         <strong>Notifications</strong>
-        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-          {unreadNotifications.length > 0 && (
-            <button
-              className="text-button"
-              onClick={markAllNotificationsRead}
-              style={{ fontSize: "12px", padding: "4px 8px" }}
-            >
-              Mark all read
-            </button>
-          )}
-          <button className="icon-button" onClick={onClose} aria-label="Close">
-            <X size={15} />
-          </button>
-        </div>
+        <button
+          className="text-button"
+          onClick={markAllNotificationsRead}
+          style={{ fontSize: "12px", padding: "4px 8px" }}
+        >
+          Mark all as read
+        </button>
       </div>
       {displayItems.length === 0 ? (
         <p className="notif-empty">All caught up 🎉</p>
@@ -346,10 +324,8 @@ export default function AppLayout() {
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [notifOpen, setNotifOpen] = useState(false);
-  const [exportOpen, setExportOpen] = useState(false);
 
   const notifRef = useRef(null);
-  const exportRef = useRef(null);
 
   const pendingCount = tasks.filter((t) => t.status !== "Completed").length;
   const unreadNotifCount = notifications.filter((n) => !n.read).length;
@@ -373,8 +349,6 @@ export default function AppLayout() {
     function h(e) {
       if (notifRef.current && !notifRef.current.contains(e.target))
         setNotifOpen(false);
-      if (exportRef.current && !exportRef.current.contains(e.target))
-        setExportOpen(false);
     }
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
@@ -384,20 +358,6 @@ export default function AppLayout() {
   useEffect(() => {
     if (window.innerWidth <= 860) setSidebarOpen(false);
   }, [location.pathname]);
-
-  function doExport(kind) {
-    setExportOpen(false);
-    const ts = new Date().toISOString().slice(0, 10);
-    if (kind === "leads") {
-      downloadCsv(`nexacrm-leads-${ts}.csv`, leads, users);
-    }
-    if (kind === "customers") {
-      downloadCsv(`nexacrm-customers-${ts}.csv`, customers, users);
-    }
-    if (kind === "tasks") {
-      downloadCsv(`nexacrm-tasks-${ts}.csv`, tasks, users);
-    }
-  }
 
   return (
     <div className={`app-shell ${sidebarOpen ? "sb-open" : "sb-closed"}`}>
@@ -476,46 +436,6 @@ export default function AppLayout() {
 
           {/* Right: actions */}
           <div className="topbar-actions">
-            <Link to="/tasks" className="topbar-nav-link" title="Tasks">
-              <CheckSquare size={17} />
-              <span className="tnl-label">Tasks</span>
-              {pendingCount > 0 && (
-                <span className="tnl-badge">{pendingCount}</span>
-              )}
-            </Link>
-
-            <Link to="/reports" className="topbar-nav-link" title="Reports">
-              <BarChart3 size={17} />
-              <span className="tnl-label">Reports</span>
-            </Link>
-
-            {/* Export */}
-            <div className="dd-wrap" ref={exportRef}>
-              <button
-                className="icon-button"
-                onClick={() => setExportOpen((p) => !p)}
-                title="Export data"
-              >
-                <Download size={18} />
-              </button>
-              {exportOpen && (
-                <div className="dd-menu">
-                  <button onClick={() => doExport("leads")}>
-                    <FileSpreadsheet size={14} />
-                    Leads CSV
-                  </button>
-                  <button onClick={() => doExport("customers")}>
-                    <FileSpreadsheet size={14} />
-                    Customers CSV
-                  </button>
-                  <button onClick={() => doExport("tasks")}>
-                    <FileText size={14} />
-                    Tasks CSV
-                  </button>
-                </div>
-              )}
-            </div>
-
             {/* Notifications */}
             <div className="dd-wrap" ref={notifRef}>
               <button

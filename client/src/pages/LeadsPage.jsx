@@ -1,4 +1,4 @@
-import { Edit3, Plus, Trash2 } from "lucide-react";
+import { Download, Edit3, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import Badge from "../components/common/Badge.jsx";
 import Button from "../components/common/Button.jsx";
@@ -11,9 +11,10 @@ import { useCrmData } from "../context/CrmDataContext.jsx";
 import { leadStatuses } from "../data/mockData.js";
 import { useDebouncedValue } from "../hooks/useDebouncedValue.js";
 import { formatCurrency, statusTone } from "../utils/formatters.js";
+import { downloadCsv } from "../utils/csvExport.js";
 
 function LeadsPage() {
-  const { leads, removeLead } = useCrmData();
+  const { leads, removeLead, users } = useCrmData();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
   const [open, setOpen] = useState(false);
@@ -40,6 +41,11 @@ function LeadsPage() {
   function closeEditor() {
     setEditing(null);
     setOpen(false);
+  }
+
+  function handleExport() {
+    const ts = new Date().toISOString().slice(0, 10);
+    downloadCsv(`nexacrm-leads-${ts}.csv`, leads, users);
   }
 
   const columns = [
@@ -110,9 +116,14 @@ function LeadsPage() {
         title="Leads"
         eyebrow="Sales lifecycle"
         actions={
-          <Button icon={Plus} onClick={() => setOpen(true)}>
-            Add Lead
-          </Button>
+          <div style={{ display: "flex", gap: "0.5rem" }}>
+            <Button variant="ghost" icon={Download} onClick={handleExport}>
+              Export CSV
+            </Button>
+            <Button icon={Plus} onClick={() => setOpen(true)}>
+              Add Lead
+            </Button>
+          </div>
         }
       />
 
