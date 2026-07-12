@@ -417,68 +417,102 @@ a {
 }
 
 .topbar {
-  min-height: 68px;
-  justify-content: space-between;
-  padding: 0 28px;
+  height: 64px;
+  padding: 0 24px;
   border-bottom: 1px solid var(--line);
-  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  background: var(--surface);
   position: sticky;
   top: 0;
   z-index: 8;
   backdrop-filter: blur(16px);
   display: flex;
-  gap: 16px;
   align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
 .topbar-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   min-width: 0;
-  flex: 0 0 auto;
+  flex-shrink: 0;
+}
+
+.topbar-left .icon-button {
+  flex-shrink: 0;
 }
 
 .topbar-left > div {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   min-width: 0;
+  gap: 2px;
 }
 
 .topbar-label {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   color: var(--muted);
   white-space: nowrap;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .topbar-left strong {
-  font-size: 1.05rem;
+  font-size: 1rem;
+  font-weight: 700;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: var(--text);
 }
 
 .topbar-center {
   display: none;
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
+  max-width: 520px;
+  justify-content: center;
 }
 
-.topbar-center .search-input {
-  max-width: 360px;
-}
-
-.topbar > div:first-of-type {
-  display: grid;
+.topbar-center .gs-inline {
+  width: 100%;
 }
 
 .topbar strong {
-  font-size: 1.05rem;
+  font-size: 1rem;
 }
 
-.topbar-actions,
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.topbar-actions .dd-wrap {
+  position: relative;
+}
+
+.topbar-actions .icon-button.logout-btn {
+  margin-left: 4px;
+  border-color: rgba(220, 38, 38, 0.2);
+}
+
+.topbar-actions .icon-button.logout-btn:hover {
+  background: rgba(220, 38, 38, 0.08);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
 .page-actions,
 .toolbar {
+  display: flex;
+  align-items: center;
   gap: 10px;
+  flex-shrink: 0;
 }
 
 .mobile-menu {
@@ -918,27 +952,39 @@ a {
 }
 
 .icon-button {
-  width: 40px;
-  height: 40px;
-  display: inline-grid;
-  place-items: center;
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid var(--line);
   background: var(--surface);
   color: var(--text);
-  border-radius: 8px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  cursor: pointer;
   transition:
     background 0.2s ease,
-    border-color 0.2s ease;
+    border-color 0.2s ease,
+    transform 0.15s ease,
+    box-shadow 0.2s ease;
 }
 
 .icon-button:hover {
   background: var(--surface-strong);
   border-color: var(--primary);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(15, 159, 143, 0.1);
+}
+
+.icon-button:active {
+  transform: translateY(0);
 }
 
 .icon-button svg {
   width: 20px;
   height: 20px;
+  flex-shrink: 0;
 }
 
 /* Notification Bell */
@@ -948,13 +994,14 @@ a {
 
 .notification-badge {
   position: absolute;
-  top: -4px;
-  right: -4px;
-  width: 18px;
-  height: 18px;
+  top: -6px;
+  right: -6px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
   background: var(--coral);
   color: white;
-  border-radius: 50%;
+  border-radius: 10px;
   font-size: 0.7rem;
   font-weight: 800;
   display: flex;
@@ -962,15 +1009,18 @@ a {
   justify-content: center;
   border: 2px solid var(--surface);
   animation: pulse 2s infinite;
+  box-shadow: 0 2px 8px rgba(239, 111, 108, 0.4);
 }
 
 @keyframes pulse {
   0%,
   100% {
     opacity: 1;
+    transform: scale(1);
   }
   50% {
-    opacity: 0.7;
+    opacity: 0.85;
+    transform: scale(1.05);
   }
 }
 
@@ -1469,25 +1519,38 @@ a {
   }
 
   .topbar {
-    padding: 0 16px;
-    flex-direction: column;
+    height: auto;
+    padding: 12px 16px;
+    flex-wrap: wrap;
     gap: 12px;
   }
 
-  .topbar-left,
-  .topbar-actions {
+  .topbar-left {
     width: 100%;
     justify-content: space-between;
+    order: 1;
+  }
+
+  .topbar-actions {
+    width: auto;
+    justify-content: flex-end;
+    order: 1;
+    margin-left: auto;
   }
 
   .topbar-center {
     width: 100%;
+    max-width: 100%;
     display: flex !important;
+    order: 2;
   }
 
-  .topbar-center .search-input {
-    max-width: 100%;
+  .topbar-center .gs-inline {
     width: 100%;
+  }
+
+  .notif-panel {
+    width: min(360px, calc(100vw - 32px));
   }
 
   .content-shell {
@@ -1543,8 +1606,24 @@ a {
     flex: 1 1 100%;
   }
 
-  .topbar > div:first-of-type {
-    max-width: 170px;
+  .topbar-left > div {
+    max-width: 140px;
+  }
+
+  .topbar-left strong,
+  .topbar-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .icon-button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .icon-button svg {
+    width: 18px;
+    height: 18px;
   }
 }
 
@@ -2114,79 +2193,119 @@ a {
 ================================================================ */
 .notif-panel {
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + 12px);
   right: 0;
-  width: 330px;
+  width: 360px;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 12px;
-  box-shadow: var(--shadow);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   z-index: 100;
   overflow: hidden;
-  animation: ddDrop 0.15s ease;
+  animation: ddDrop 0.2s ease;
 }
+
 .notif-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 13px 15px 9px;
+  padding: 16px 18px;
   border-bottom: 1px solid var(--line);
+  background: var(--surface-strong);
 }
+
 .notif-header strong {
-  font-size: 0.92rem;
+  font-size: 0.95rem;
+  font-weight: 700;
 }
+
 .notif-list {
   list-style: none;
   margin: 0;
   padding: 4px 0;
-  max-height: 320px;
+  max-height: 380px;
   overflow-y: auto;
 }
+
 .notif-item {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  padding: 9px 15px;
+  gap: 12px;
+  padding: 12px 18px;
   transition: background 0.15s;
+  border-bottom: 1px solid var(--line);
 }
+
+.notif-item:last-child {
+  border-bottom: none;
+}
+
 .notif-item:hover {
   background: var(--surface-strong);
 }
+
 .notif-item div {
   flex: 1;
   min-width: 0;
 }
+
 .notif-item strong {
   display: block;
-  font-size: 0.84rem;
+  font-size: 0.875rem;
+  font-weight: 600;
   overflow-wrap: anywhere;
+  margin-bottom: 4px;
 }
+
 .notif-item span {
   color: var(--muted);
-  font-size: 0.76rem;
+  font-size: 0.8rem;
   display: block;
+  line-height: 1.4;
 }
+
 .notif-dot {
-  width: 9px;
-  height: 9px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   flex-shrink: 0;
   margin-top: 5px;
 }
+
 .p-high {
   background: var(--danger);
 }
+
 .p-medium {
   background: var(--amber);
 }
+
 .p-low {
   background: var(--success);
 }
+
 .notif-empty {
-  padding: 18px 15px;
+  padding: 32px 18px;
   color: var(--muted);
   text-align: center;
   margin: 0;
+  font-size: 0.9rem;
+}
+
+.text-button {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.text-button:hover {
+  background: var(--surface-strong);
 }
 
 /* ================================================================
@@ -2195,29 +2314,31 @@ a {
 .gs-inline {
   position: relative;
   width: 100%;
-  max-width: 460px;
+  max-width: 100%;
 }
-.app-shell.sb-closed .gs-inline {
-  max-width: 600px;
-}
+
 .gs-inline-input-row {
   display: flex;
   align-items: center;
   gap: 10px;
   background: var(--surface-strong);
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 0 14px;
-  min-height: 40px;
+  height: 42px;
   color: var(--muted);
   transition:
     border-color 0.2s,
-    box-shadow 0.2s;
+    box-shadow 0.2s,
+    background 0.2s;
 }
+
 .gs-inline-input-row:focus-within {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(29, 185, 84, 0.15);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px rgba(15, 159, 143, 0.1);
 }
+
 .gs-inline-input-row input {
   flex: 1;
   border: 0;
@@ -2227,51 +2348,70 @@ a {
   outline: 0;
   min-width: 0;
 }
+
+.gs-inline-input-row input::placeholder {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.gs-inline-input-row svg {
+  flex-shrink: 0;
+}
+
 .gs-dropdown {
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% + 8px);
   left: 0;
   right: 0;
   list-style: none;
   margin: 0;
   padding: 6px 0;
-  max-height: 360px;
+  max-height: 400px;
   overflow-y: auto;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 10px;
-  box-shadow: var(--shadow);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   z-index: 60;
 }
+
 .gs-dropdown li {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 16px;
+  padding: 12px 16px;
   cursor: pointer;
   transition: background 0.15s;
 }
+
 .gs-dropdown li:hover {
   background: var(--surface-strong);
 }
+
 .gs-dropdown li div {
   flex: 1;
   min-width: 0;
 }
+
 .gs-dropdown li strong {
   display: block;
   font-size: 0.9rem;
+  font-weight: 600;
 }
+
 .gs-dropdown li span {
   color: var(--muted);
   font-size: 0.8rem;
 }
+
 .gs-dropdown-empty {
-  padding: 18px 16px;
+  padding: 20px 16px;
   color: var(--muted);
   text-align: center;
   cursor: default !important;
+  font-size: 0.9rem;
 }
+
 .gs-dropdown-empty:hover {
   background: transparent !important;
 }

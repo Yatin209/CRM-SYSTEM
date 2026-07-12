@@ -29,11 +29,14 @@ function ForgotPasswordPage() {
       setSubmittedEmail(values.email);
       setSubmitted(true);
       toast.success("Password reset link sent — check your inbox");
-    } catch {
-      // Always show the same message regardless to avoid user enumeration
-      setSubmittedEmail(values.email);
-      setSubmitted(true);
-      toast.info("If that email is registered, a reset link has been sent");
+    } catch (error) {
+      // Show specific error message for email not found
+      const message = error.response?.data?.message || "An error occurred";
+      if (message === "Email not found") {
+        toast.error("Email not found");
+      } else {
+        toast.error("Failed to send reset link. Please try again.");
+      }
     }
   }
 

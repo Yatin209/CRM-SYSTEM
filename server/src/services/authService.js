@@ -127,66 +127,72 @@ export async function createPasswordReset(email) {
   if (isMongoReady()) {
     user = await User.findOne({ email: email.toLowerCase() });
 
-    if (user) {
-      await PasswordReset.create({
-        user: user.id,
-        email: user.email,
-        tokenHash,
-        expiresAt,
-      });
+    if (!user) {
+      const error = new Error("Email not found");
+      error.statusCode = 404;
+      throw error;
     }
+
+    await PasswordReset.create({
+      user: user.id,
+      email: user.email,
+      tokenHash,
+      expiresAt,
+    });
   } else {
     user = findUserByEmail(email);
 
-    if (user) {
-      createMemory(
-        "passwordResets",
-        {
-          email: user.email,
-          tokenHash,
-          expiresAt: expiresAt.toISOString(),
-        },
-        null,
-      );
+    if (!user) {
+      const error = new Error("Email not found");
+      error.statusCode = 404;
+      throw error;
     }
+
+    createMemory(
+      "passwordResets",
+      {
+        email: user.email,
+        tokenHash,
+        expiresAt: expiresAt.toISOString(),
+      },
+      null,
+    );
   }
 
-  if (user) {
-    const resetLink = `${env.clientOrigin}/reset-password?token=${token}`;
+  const resetLink = `${env.clientOrigin}/reset-password?token=${token}`;
 
-    await sendMail({
-      to: user.email,
-      subject: "Reset your NexaCRM password",
-      html: `
-        <div style="font-family:Arial,sans-serif">
-          <h2>NexaCRM Password Reset</h2>
-          <p>Hello ${user.name || "User"},</p>
-          <p>You requested to reset your password.</p>
+  await sendMail({
+    to: user.email,
+    subject: "Reset your NexaCRM password",
+    html: `
+      <div style="font-family:Arial,sans-serif">
+        <h2>NexaCRM Password Reset</h2>
+        <p>Hello ${user.name || "User"},</p>
+        <p>You requested to reset your password.</p>
 
-          <p>
-            <a href="${resetLink}"
-               style="
-                 background:#2563eb;
-                 color:white;
-                 padding:12px 24px;
-                 text-decoration:none;
-                 border-radius:6px;
-               ">
-               Reset Password
-            </a>
-          </p>
+        <p>
+          <a href="${resetLink}"
+             style="
+               background:#2563eb;
+               color:white;
+               padding:12px 24px;
+               text-decoration:none;
+               border-radius:6px;
+             ">
+             Reset Password
+          </a>
+        </p>
 
-          <p>This link expires in <strong>30 minutes</strong>.</p>
+        <p>This link expires in <strong>30 minutes</strong>.</p>
 
-          <p>If you didn't request this, simply ignore this email.</p>
+        <p>If you didn't request this, simply ignore this email.</p>
 
-          <br>
+        <br>
 
-          <p>Regards,<br><strong>NexaCRM Team</strong></p>
-        </div>
-      `,
-    });
-  }
+        <p>Regards,<br><strong>NexaCRM Team</strong></p>
+      </div>
+    `,
+  });
 
   return token;
 }
