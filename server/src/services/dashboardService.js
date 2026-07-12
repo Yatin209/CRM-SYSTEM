@@ -5,6 +5,7 @@ import Customer from "../models/Customer.js";
 import Lead from "../models/Lead.js";
 import Task from "../models/Task.js";
 import Campaign from "../models/Campaign.js";
+import { filterVisibleTasks, taskVisibilityFilter } from "../utils/taskVisibility.js";
 
 // Pipeline columns now mirror Lead.status exactly.
 const stages = [
@@ -22,7 +23,9 @@ function sum(records, key) {
   return records.reduce((total, record) => total + Number(record[key] || 0), 0);
 }
 
-export async function getDashboard() {
+export async function getDashboard(user) {
+  const visibleTaskFilter = taskVisibilityFilter(user);
+
   if (isMongoReady()) {
     const [
       totalCustomers,
@@ -37,7 +40,7 @@ export async function getDashboard() {
       Customer.countDocuments(),
       Lead.countDocuments(),
       Lead.countDocuments({ status: "Converted" }),
-      Task.countDocuments({ status: { $ne: "Completed" } }),
+      Task.countDocuments({ status: { $ne: "Completed" }, ...visibleTaskFilter }),
       Customer.aggregate([
         { $group: { _id: null, total: { $sum: "$value" } } },
       ]),
@@ -82,6 +85,7 @@ export async function getDashboard() {
   }
 
   const state = memoryState();
+  const visibleTasks = filterVisibleTasks(user, state.tasks);
   const convertedLeads = state.leads.filter(
     (lead) => lead.status === "Converted",
   ).length;
@@ -94,7 +98,7 @@ export async function getDashboard() {
       ).length,
       convertedLeads,
       pendingFollowUps:
-        state.tasks.filter((task) => task.status !== "Completed").length +
+        visibleTasks.filter((task) => task.status !== "Completed").length +
         state.followUps.length,
       monthlyRevenue: sum(state.customers, "value"),
       totalCampaigns: state.campaigns.length,

@@ -33,6 +33,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 import {
   formatCurrency,
   formatNumber,
+  formatDate,
 } from "../utils/formatters.js";
 
 const CHART_COLORS = [
@@ -82,12 +83,12 @@ function UpcomingFollowUps({ tasks }) {
             {dueLine(task.dueDate)}
           </span>
           <div className="followup-body">
-            <strong>{task.title}</strong>
-            <span>
-              {task.relatedTo} {task.dueTime ? `(${task.dueTime})` : ""} ·{" "}
-              {task.type}
-            </span>
-          </div>
+  <strong>{task.title}</strong>
+  <span>
+    {task.relatedTo} {task.dueTime ? `(${task.dueTime})` : ""} ·{" "}
+    {task.type} · Due: {formatDate(task.dueDate)}
+  </span>
+</div>
           <Badge tone={PRIORITY_TONE[task.priority] || "warning"}>
             {PRIORITY_ICON[task.priority]} {task.priority}
           </Badge>

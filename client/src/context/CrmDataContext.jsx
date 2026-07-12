@@ -40,6 +40,15 @@ function currency(value) {
   return Number(value || 0);
 }
 
+function filterVisibleTasksForUser(user, records = []) {
+  if (!user || user.role === "Administrator") {
+    return records;
+  }
+
+  const assignees = new Set([user.name, user.email].filter(Boolean));
+  return records.filter((task) => assignees.has(task.assignee));
+}
+
 export function CrmDataProvider({ children }) {
   const { user } = useAuth();
 
@@ -83,12 +92,12 @@ export function CrmDataProvider({ children }) {
     try {
       const res = await http.get("/tasks", { params: { limit: 100 } });
       const data = res.data?.data || [];
-      setTasks(Array.isArray(data) ? data : initialTasks);
+      setTasks(filterVisibleTasksForUser(user, Array.isArray(data) ? data : initialTasks));
     } catch (err) {
       console.warn("Could not fetch tasks, using local fallback:", err.message);
-      setTasks((prev) => (prev.length ? prev : initialTasks));
+      setTasks((prev) => (prev.length ? filterVisibleTasksForUser(user, prev) : filterVisibleTasksForUser(user, initialTasks)));
     }
-  }, []);
+  }, [user]);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -516,13 +525,13 @@ export function CrmDataProvider({ children }) {
           relatedTo: payload.relatedTo || "",
           dueDate:
             payload.dueDate || dayjs().add(1, "day").format("YYYY-MM-DD"),
-          status: payload.status || "Open",
+          status: payload.status || "Pending",
           priority: payload.priority || "Medium",
           assignee: payload.assignee || "Unassigned",
         };
         const res = await http.post("/tasks", taskData);
         const newTask = res.data?.data || taskData;
-        setTasks((cur) => [newTask, ...cur]);
+        setTasks((cur) => (filterVisibleTasksForUser(user, [newTask]).length ? [newTask, ...cur] : cur));
         toast.success("✓ Task created");
         fetchDashboard();
         return newTask;
@@ -535,7 +544,7 @@ export function CrmDataProvider({ children }) {
         throw error;
       }
     },
-    [fetchDashboard],
+    [fetchDashboard, user],
   );
 
   const updateTask = useCallback(
@@ -544,13 +553,33 @@ export function CrmDataProvider({ children }) {
         const res = await http.put(`/tasks/${id}`, patch);
         const updated = res.data?.data || patch;
         setTasks((cur) =>
-          cur.map((t) => (t.id === id ? { ...t, ...updated } : t)),
+          cur.reduce((next, task) => {
+            if (task.id !== id) return [...next, task];
+            const merged = { ...task, ...updated };
+            return filterVisibleTasksForUser(user, [merged]).length ? [...next, merged] : next;
+          }, []),
         );
         toast.success("✓ Task updated");
         fetchDashboard();
         return updated;
       } catch (error) {
         toast.error(error.response?.data?.message || "Failed to update task");
+        throw error;
+      }
+    },
+    [fetchDashboard, user],
+  );
+
+  const deleteTask = useCallback(
+    async (id) => {
+      try {
+        await http.delete(`/tasks/${id}`);
+        setTasks((cur) => cur.filter((t) => t.id !== id));
+        toast.success("✓ Task deleted");
+        fetchDashboard();
+        return true;
+      } catch (error) {
+        toast.error(error.response?.data?.message || "Failed to delete task");
         throw error;
       }
     },
@@ -804,6 +833,7 @@ export function CrmDataProvider({ children }) {
       convertLead,
       removeLead,
       updateTask,
+      deleteTask,
       addCampaign,
       updateCampaign,
       removeCampaign,
@@ -837,6 +867,7 @@ export function CrmDataProvider({ children }) {
       convertLead,
       removeLead,
       updateTask,
+      deleteTask,
       addCampaign,
       updateCampaign,
       removeCampaign,

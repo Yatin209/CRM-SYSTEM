@@ -67,7 +67,7 @@ export function statusTone(status) {
     ].includes(status)
   )
     return "warning";
-  if (["Qualified", "Interested", "Open", "Contacted"].includes(status))
+  if (["Qualified", "Interested", "Pending", "Contacted"].includes(status))
     return "primary";
   return "neutral";
 }

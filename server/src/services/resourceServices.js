@@ -9,6 +9,7 @@ import Report from "../models/Report.js";
 import Task from "../models/Task.js";
 import User from "../models/User.js";
 import { createGenericService } from "./genericService.js";
+import { sendCustomerWelcomeEmail } from "./customerEmailService.js";
 import { findOneMemory } from "../data/memoryStore.js";
 
 const baseCustomerService = createGenericService({
@@ -16,6 +17,12 @@ const baseCustomerService = createGenericService({
   Model: Customer,
   searchable: ["name", "company", "email", "owner", "category"]
 });
+
+async function createCustomerAndSendWelcomeEmail(payload, actorId) {
+  const customer = await baseCustomerService.create(payload, actorId);
+  await sendCustomerWelcomeEmail(customer, actorId);
+  return customer;
+}
 
 export const customerService = {
   ...baseCustomerService,
@@ -30,7 +37,7 @@ export const customerService = {
         error.statusCode = 409;
         throw error;
       }
-      return baseCustomerService.create({ ...payload, email }, actorId);
+      return createCustomerAndSendWelcomeEmail({ ...payload, email }, actorId);
     }
 
     const existing = email
@@ -41,7 +48,7 @@ export const customerService = {
       error.statusCode = 409;
       throw error;
     }
-    return baseCustomerService.create({ ...payload, email }, actorId);
+    return createCustomerAndSendWelcomeEmail({ ...payload, email }, actorId);
   },
 
   async update(id, payload, actorId) {

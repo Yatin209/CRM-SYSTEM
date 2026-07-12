@@ -29,6 +29,7 @@ import { canAccess, ROLE_COLORS } from "../config/roles.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useCrmData } from "../context/CrmDataContext.jsx";
 import { downloadCsv } from "../utils/csvExport.js";
+import { formatDate } from "../utils/formatters.js";
 
 dayjs.extend(relativeTime);
 
@@ -156,7 +157,7 @@ function NotifPanel({ notifications, tasks, markNotificationRead, markAllNotific
                   <div style={{ flex: 1 }}>
                     <strong>{item.title}</strong>
                     <span>
-                      {item.relatedTo} · Due: {item.dueDate}
+                      {item.relatedTo} · Due: {formatDate(item.dueDate)}
                     </span>
                   </div>
                   <Badge tone={getTaskTone(item.priority)}>

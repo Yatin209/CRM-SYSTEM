@@ -9,7 +9,7 @@ const taskSchema = new mongoose.Schema(
     type: { type: String, enum: ["Follow-up", "Meeting", "Proposal", "Support", "Call"], default: "Follow-up", index: true },
     dueDate: { type: Date, required: true, index: true },
     priority: { type: String, enum: ["High", "Medium", "Low"], default: "Medium", index: true },
-    status: { type: String, enum: ["Open", "In Progress", "Completed"], default: "Open", index: true },
+    status: { type: String, enum: ["Pending", "In Progress", "Completed"], default: "Pending", index: true },
     ...auditFields
   },
   schemaOptions

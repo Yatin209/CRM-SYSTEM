@@ -25,6 +25,9 @@ function matchesSearch(record, search, searchable = []) {
 function matchesFilters(record, filters = {}) {
   return Object.entries(filters).every(([key, value]) => {
     if (!value || value === "All") return true;
+    if (Array.isArray(value?.$in)) {
+      return value.$in.map(String).includes(String(record[key]));
+    }
     return String(record[key]) === String(value);
   });
 }

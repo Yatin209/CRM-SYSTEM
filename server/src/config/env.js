@@ -32,8 +32,3 @@ export const env = {
   },
 };
 
-console.log("SMTP_HOST:", env.smtp.host);
-console.log("SMTP_PORT:", env.smtp.port);
-console.log("SMTP_USER:", env.smtp.user);
-console.log("SMTP_PASS:", env.smtp.pass ? "Loaded" : "Missing");
-console.log("SMTP_FROM:", env.smtp.from);

@@ -216,7 +216,7 @@ export const initialTasks = [
     type: "Support",
     dueDate: dayjs().add(2, "day").format("YYYY-MM-DD"),
     priority: "High",
-    status: "Open"
+    status: "Pending"
   },
   {
     id: "task_3003",
@@ -226,7 +226,7 @@ export const initialTasks = [
     type: "Meeting",
     dueDate: dayjs().add(3, "day").format("YYYY-MM-DD"),
     priority: "Medium",
-    status: "Open"
+    status: "Pending"
   },
   {
     id: "task_3004",

@@ -16,7 +16,7 @@ const schema = z.object({
   name: z.string().min(2, "Customer name is required"),
   company: z.string().min(2, "Company is required"),
   email: z.string().email("Valid email required"),
-  phone: z.string().min(8, "Phone number is required"),
+  phone: z.string().min(10, "Phone number is required"),
   address: z.string().min(4, "Address is required"),
   category: z.string(),
   industry: z.string(),

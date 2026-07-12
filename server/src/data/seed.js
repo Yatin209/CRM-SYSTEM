@@ -210,7 +210,7 @@ export const seed = {
       type: "Support",
       dueDate: iso(2),
       priority: "High",
-      status: "Open",
+      status: "Pending",
       createdAt: iso(-1),
       updatedAt: iso(-1)
     }
